@@ -32,7 +32,7 @@ BooksApp
 |--SearchBooks
    |--BookShelf - search results
       |--Book
-|     |--...
+      |--...
 ```
 Each component is defined in respective *.js file.
 ### Main screen
