@@ -1,10 +1,46 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
+import * as BooksAPI from './BooksAPI'
+import BookShelf from './BookShelf'
 
 class SearchBooks extends Component {
   state = {
+    query: '',
     books: []
   }
+
+  findShelf = (bookId) => {
+    const b = this.props.books.find(
+      (book) => (book.id === bookId)
+    );
+    return (b ? b.shelf : '');
+  }
+
+  updateQuery = (query) => {
+    if(query === '') {
+      // empty query - do not bother searching
+      this.setState({ books:[], query });
+    }
+    else {
+      BooksAPI.search(query).then((foundBooks) => {
+        // add shelf to each found book
+        // Assumption: items of props.books contain at least id and shelf
+        if(foundBooks.map) {
+          const books = foundBooks.map(book => {
+            book.shelf = this.findShelf(book.id);
+              return book;
+          })
+          this.setState({ books, query });
+        }
+      }).catch(this.setState({ books: [], query }));
+    }
+  }
+
+  onMoveBook = (book, shelf) => {
+    this.props.onMoveBook(book, shelf)
+  }
+
+
   render() {
     return (
       <div className="search-books">
@@ -19,11 +55,19 @@ class SearchBooks extends Component {
               However, remember that the BooksAPI.search method DOES search by title or author. So, don't worry if
               you don't find a specific author or title. Every search is limited by search terms.
             */}
-            <input type="text" placeholder="Search by title or author"/>
+            <input type="text" placeholder="Search by title or author"
+              value={this.state.query}
+              onChange={(event) => this.updateQuery(event.target.value)}
+            />
           </div>
         </div>
         <div className="search-books-results">
-          <ol className="books-grid"></ol>
+          <BookShelf
+            title="Found"
+            shelf=""
+            books={this.state.books}
+            onMoveBook={this.onMoveBook}
+          />
         </div>
       </div>
     );
