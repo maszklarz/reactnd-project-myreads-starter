@@ -8,6 +8,7 @@ class SearchBooks extends Component {
     query: '',
     books: []
   }
+  newestQuery = ''  // to imporove typing responsivity in search box
 
   findShelf = (bookId) => {
     const b = this.props.books.find(
@@ -17,6 +18,7 @@ class SearchBooks extends Component {
   }
 
   updateQuery = (query) => {
+    this.newestQuery = query;
     if(query === '') {
       // empty query - do not bother searching
       this.setState({ books:[], query });
@@ -30,7 +32,12 @@ class SearchBooks extends Component {
             book.shelf = this.findShelf(book.id);
               return book;
           })
-          this.setState({ books, query });
+          // if query stored in promise is outdated repeat the search
+          if(query !== this.newestQuery)
+            this.updateQuery(this.newestQuery);
+          else {
+            this.setState({ books, query });
+          }
         }
       }).catch(this.setState({ books: [], query }));
     }
